@@ -3,7 +3,7 @@ import torchvision
 import torchvision.transforms as transforms
 
 
-def get_mnist_dataset():
+def get_mnist_dataset(label=7):
     # transform = torchvision.transforms.Compose([
     #     torchvision.transforms.Scale(32),
     #     torchvision.transforms.ToTensor(),
@@ -25,7 +25,7 @@ def get_mnist_dataset():
         transform=transform
     )
 
-    return dataset
+    return filter_mnist_dataset_to_one_label(dataset, label=label)
 
 
 def filter_mnist_dataset_to_one_label(dataset, label=7):
