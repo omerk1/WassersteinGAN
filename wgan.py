@@ -232,15 +232,15 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
 
         fake_images = gen_model.sample(x_data.shape[0], with_grad=False)
         d_loss_fake = dsc_model(fake_images)
-        d_loss_fake = d_loss_fake.mean()
-        d_loss_fake.backward(one)
+        d_loss_fake = d_loss_fake.mean(0).view(1)
+        d_loss_fake.backward(mone)
 
         d_loss += d_loss_fake - d_loss_real
         wasserstein_d += d_loss_real - d_loss_fake
         dsc_optimizer.step()
 
-    # d_loss = d_loss / dsc_iter_per_gen_iter
-    d_loss = wasserstein_d / dsc_iter_per_gen_iter
+    d_loss = d_loss / dsc_iter_per_gen_iter
+    wasserstein_d = wasserstein_d / dsc_iter_per_gen_iter
     # ========================
 
     # TODO: Generator update
@@ -256,9 +256,10 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     fake_images = gen_model.sample(x_data.shape[0], with_grad=True)
 
     g_loss = dsc_model(fake_images)
-    g_loss = g_loss.mean()
-    g_loss.backward(mone)
+    g_loss = g_loss.mean().mean(0).view(1)
+    g_loss.backward(one)
+    g_cost = -g_loss
     gen_optimizer.step()
     # ========================
 
-    return d_loss.item(), -g_loss.item()
+    return d_loss.item(), g_cost.item(), wasserstein_d.item()
