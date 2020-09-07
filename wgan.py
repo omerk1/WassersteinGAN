@@ -222,10 +222,10 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
         d_loss_fake = d_loss_fake.mean(0).view(1)
         d_loss_fake.backward(torch.FloatTensor([-1]).to(device))
 
-        d_loss = d_loss_fake - d_loss_real
+        d_loss += d_loss_fake - d_loss_real
         Wasserstein_D = d_loss_real - d_loss_fake
         dsc_optimizer.step()
-
+    d_loss = d_loss / dsc_iter_per_gen_iter
     # ========================
 
     # TODO: Generator update
