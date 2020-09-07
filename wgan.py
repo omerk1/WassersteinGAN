@@ -206,13 +206,17 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     # 2. Calculate discriminator loss
     # 3. Update discriminator parameters
     # ====== YOUR CODE: ======
-    one = torch.FloatTensor([1])
+    one = torch.tensor(1, dtype=torch.float)
     mone = one * -1
 
     one = one.to(device)
     mone = mone.to(device)
 
     d_loss = 0
+
+    for p in gen_model.parameters():
+        p.requires_grad = True
+
     for _ in range(dsc_iter_per_gen_iter):
         dsc_optimizer.zero_grad()
 
