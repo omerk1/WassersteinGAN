@@ -54,7 +54,7 @@ class Discriminator(nn.Module):
         # with the loss due to improved numerical stability.
         # ====== YOUR CODE: ======
         y = self.convs(x)
-        y = y.squeeze(3).squeeze(2)
+        y = y.squeeze(1).squeeze(1).squeeze(1)
         # ========================
         return y
 
@@ -162,7 +162,6 @@ def discriminator_loss_fn(y_data, y_generated, data_label=0, label_noise=0.0):
     # TODO: Implement the discriminator loss.
     # See torch's BCEWithLogitsLoss for a numerically stable implementation.
     # ====== YOUR CODE: ======
-
 
     generated_label = 1 - data_label
     N = y_data.shape[0]
