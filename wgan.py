@@ -213,6 +213,7 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     mone = mone.to(device)
 
     d_loss = 0
+    wasserstein_d = 0
 
     for p in gen_model.parameters():
         p.requires_grad = True
@@ -234,9 +235,11 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
         d_loss_fake.backward(one)
 
         d_loss += d_loss_fake - d_loss_real
-        wasserstein_d = d_loss_real - d_loss_fake
+        wasserstein_d += d_loss_real - d_loss_fake
         dsc_optimizer.step()
-    d_loss = d_loss / dsc_iter_per_gen_iter
+
+    # d_loss = d_loss / dsc_iter_per_gen_iter
+    d_loss = wasserstein_d / dsc_iter_per_gen_iter
     # ========================
 
     # TODO: Generator update
@@ -257,4 +260,4 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     gen_optimizer.step()
     # ========================
 
-    return d_loss.item(), g_loss.item()
+    return d_loss.item(), -g_loss.item()

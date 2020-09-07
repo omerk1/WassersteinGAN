@@ -30,7 +30,7 @@ def main():
 
     # Model
     dsc = wgan.Discriminator(im_size).to(device)
-    gen = wgan.Generator(z_dim, featuremap_size=4, out_channels=1).to(device)
+    gen = wgan.Generator(z_dim, featuremap_size=4, out_channels=im_size[0]).to(device)
 
     # Optimizer
     def create_optimizer(model_params, opt_params):
@@ -43,11 +43,11 @@ def main():
     gen_optimizer = create_optimizer(gen.parameters(), hp['generator_optimizer'])
 
     # Loss
-    def dsc_loss_fn(y_data, y_generated):
-        return wgan.discriminator_loss_fn(y_data, y_generated, hp['data_label'], hp['label_noise'])
-
-    def gen_loss_fn(y_generated):
-        return wgan.generator_loss_fn(y_generated, hp['data_label'])
+    # def dsc_loss_fn(y_data, y_generated):
+    #     return wgan.discriminator_loss_fn(y_data, y_generated, hp['data_label'], hp['label_noise'])
+    #
+    # def gen_loss_fn(y_generated):
+    #     return wgan.generator_loss_fn(y_generated, hp['data_label'])
 
     # Training
     num_epochs = 100
