@@ -122,7 +122,7 @@ class Generator(nn.Module):
         computation graph or standalone tensors.
         :return: A batch of samples, shape (N,C,H,W).
         """
-        device = next(self.parameters()).device
+        # device = next(self.parameters()).device
         # TODO: Sample from the model.
         # Generate n latent space samples and return their reconstructions.
         # Don't use a loop.
@@ -206,24 +206,31 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     # 2. Calculate discriminator loss
     # 3. Update discriminator parameters
     # ====== YOUR CODE: ======
+    one = torch.FloatTensor([1])
+    mone = one * -1
+
+    one = one.to(device)
+    mone = mone.to(device)
+
     d_loss = 0
     for _ in range(dsc_iter_per_gen_iter):
         dsc_optimizer.zero_grad()
 
         for p in dsc_model.parameters():
             p.data.clamp_(-weight_cliping_limit, weight_cliping_limit)
+            p.requires_grad = True
 
         d_loss_real = dsc_model(x_data)
-        d_loss_real = d_loss_real.mean(0).view(1)
-        d_loss_real.backward(torch.FloatTensor([1]).to(device))
+        d_loss_real = d_loss_real.mean()
+        d_loss_real.backward(mone)
 
         fake_images = gen_model.sample(x_data.shape[0], with_grad=False)
         d_loss_fake = dsc_model(fake_images)
-        d_loss_fake = d_loss_fake.mean(0).view(1)
-        d_loss_fake.backward(torch.FloatTensor([-1]).to(device))
+        d_loss_fake = d_loss_fake.mean()
+        d_loss_fake.backward(one)
 
         d_loss += d_loss_fake - d_loss_real
-        Wasserstein_D = d_loss_real - d_loss_fake
+        wasserstein_d = d_loss_real - d_loss_fake
         dsc_optimizer.step()
     d_loss = d_loss / dsc_iter_per_gen_iter
     # ========================
@@ -233,13 +240,16 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     # 2. Calculate generator loss
     # 3. Update generator parameters
     # ====== YOUR CODE: ======
+    for p in dsc_model.parameters():
+        p.requires_grad = False
+
     gen_model.zero_grad()
 
     fake_images = gen_model.sample(x_data.shape[0], with_grad=True)
 
     g_loss = dsc_model(fake_images)
-    g_loss = g_loss.mean().mean(0).view(1)
-    g_loss.backward(torch.FloatTensor([1]).to(device))
+    g_loss = g_loss.mean()
+    g_loss.backward(mone)
     gen_optimizer.step()
     # ========================
 
