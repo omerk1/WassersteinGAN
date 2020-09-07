@@ -28,7 +28,7 @@ def get_mnist_dataset(label=7):
     return filter_mnist_dataset_to_one_label(dataset, label=label)
 
 
-def filter_mnist_dataset_to_one_label(dataset, label=7):
+def filter_mnist_dataset_to_one_label(dataset, label):
     idx = dataset.train_labels == label
     dataset.data = dataset.data[idx]
     dataset.targets = dataset.targets[idx]

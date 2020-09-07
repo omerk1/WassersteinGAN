@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 import gan
 import utils.plot as plot
 from data_loading import get_mnist_dataset
-from hyperparams import gan_hyperparams
+from utils.hyperparams import gan_hyperparams
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if use_cuda else "cpu")

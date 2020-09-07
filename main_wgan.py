@@ -8,10 +8,10 @@ import torch.optim as optim
 import tqdm
 from torch.utils.data import DataLoader
 
-import wgan
 import utils.plot as plot
+import wgan
 from data_loading import get_mnist_dataset
-from hyperparams import gan_hyperparams
+from utils.hyperparams import gan_hyperparams
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if use_cuda else "cpu")
@@ -68,10 +68,10 @@ def main():
             for batch_idx, (x_data, _) in enumerate(dl_train):
                 x_data = x_data.to(device)
                 dsc_loss, gen_loss = wgan.train_batch(
-                    dsc, gen,
-                    dsc_loss_fn, gen_loss_fn,
-                    dsc_optimizer, gen_optimizer,
-                    x_data)
+                    dsc_model=dsc, gen_model=gen,
+                    dsc_optimizer=dsc_optimizer, gen_optimizer=gen_optimizer,
+                    x_data=x_data, dsc_iter_per_gen_iter=5, weight_cliping_limit=0.01
+                )
                 dsc_losses.append(dsc_loss)
                 gen_losses.append(gen_loss)
                 pbar.update()

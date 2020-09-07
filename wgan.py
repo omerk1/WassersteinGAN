@@ -1,10 +1,10 @@
-from typing import Callable
-
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
+
+use_cuda = torch.cuda.is_available()
+device = torch.device("cuda:0" if use_cuda else "cpu")
 
 
 class Discriminator(nn.Module):
@@ -27,22 +27,25 @@ class Discriminator(nn.Module):
             nn.Conv2d(in_channels, self.num_discriminator_features, kernel_size=4, stride=2, padding=1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(self.num_discriminator_features, self.num_discriminator_features * 2, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.Conv2d(self.num_discriminator_features, self.num_discriminator_features * 2, kernel_size=4, stride=2,
+                      padding=1, bias=False),
             nn.BatchNorm2d(self.num_discriminator_features * 2),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(self.num_discriminator_features * 2, self.num_discriminator_features * 4, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.Conv2d(self.num_discriminator_features * 2, self.num_discriminator_features * 4, kernel_size=4, stride=2,
+                      padding=1, bias=False),
             nn.BatchNorm2d(self.num_discriminator_features * 4),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(self.num_discriminator_features * 4, self.num_discriminator_features * 8, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.Conv2d(self.num_discriminator_features * 4, self.num_discriminator_features * 8, kernel_size=4, stride=2,
+                      padding=1, bias=False),
             nn.BatchNorm2d(self.num_discriminator_features * 8),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(self.num_discriminator_features * 8, 1, kernel_size=4, stride=1, padding=0, bias=False),
+            # nn.Conv2d(self.num_discriminator_features * 8, 1, kernel_size=4, stride=1, padding=0, bias=False),
         )
 
-        self.output = nn.Linear(8*self.num_discriminator_features, 1)
+        self.output = nn.Linear(8 * 16 * self.num_discriminator_features, 1)
         # ========================
 
     def forward(self, x):
@@ -56,8 +59,8 @@ class Discriminator(nn.Module):
         # with the loss due to improved numerical stability.
         # ====== YOUR CODE: ======
         y = self.convs(x)
-        y = self.output(y.view(-1, 8*self.num_discriminator_features))
-        y = y.squeeze(1).squeeze(1).squeeze(1)
+        y = self.output(y.view(-1, 8 * 16 * self.num_discriminator_features))
+        y = y.squeeze(1)
         # ========================
         return y
 
@@ -82,21 +85,25 @@ class Generator(nn.Module):
         num_generated_features = 128
         self.de_conv = nn.Sequential(
 
-            nn.ConvTranspose2d(z_dim, num_generated_features * 8, kernel_size=featuremap_size, stride=1, padding=0, bias=False),
+            nn.ConvTranspose2d(z_dim, num_generated_features * 8, kernel_size=featuremap_size, stride=1, padding=0,
+                               bias=False),
             nn.BatchNorm2d(num_generated_features * 8),
             nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(num_generated_features * 8, num_generated_features * 4, kernel_size=4, stride=2, padding=1,
+            nn.ConvTranspose2d(num_generated_features * 8, num_generated_features * 4, kernel_size=4, stride=2,
+                               padding=1,
                                bias=False),
             nn.BatchNorm2d(num_generated_features * 4),
             nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(num_generated_features * 4, num_generated_features * 2, kernel_size=4, stride=2, padding=1,
+            nn.ConvTranspose2d(num_generated_features * 4, num_generated_features * 2, kernel_size=4, stride=2,
+                               padding=1,
                                bias=False),
             nn.BatchNorm2d(num_generated_features * 2),
             nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(num_generated_features * 2, num_generated_features, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.ConvTranspose2d(num_generated_features * 2, num_generated_features, kernel_size=4, stride=2, padding=1,
+                               bias=False),
             nn.BatchNorm2d(num_generated_features),
             nn.ReLU(inplace=True),
 
@@ -146,33 +153,19 @@ class Generator(nn.Module):
         return x
 
 
-def discriminator_loss_fn(y_data, y_generated, data_label=0, label_noise=0.0):
-    """
-    Computes the combined loss of the discriminator given real and generated
-    data using a binary cross-entropy metric.
-    This is the loss used to update the Discriminator parameters.
-    :param y_data: Discriminator class-scores of instances of data sampled
-    from the dataset, shape (N,).
-    :param y_generated: Discriminator class-scores of instances of data
-    generated by the generator, shape (N,).
-    :param data_label: 0 or 1, label of instances coming from the real dataset.
-    :param label_noise: The range of the noise to add. For example, if
-    data_label=0 and label_noise=0.2 then the labels of the real data will be
-    uniformly sampled from the range [-0.1,+0.1].
-    :return: The combined loss of both.
-    """
-    assert data_label == 1 or data_label == 0
+def critic_loss_fn(y_data, y_generated, data_label=0, label_noise=0.0):
+    assert data_label == 1 or data_label == -1
     # TODO: Implement the discriminator loss.
     # See torch's BCEWithLogitsLoss for a numerically stable implementation.
     # ====== YOUR CODE: ======
 
-    generated_label = 1 - data_label
+    generated_label = -data_label
     N = y_data.shape[0]
 
     assert N == y_generated.shape[0]
 
-    data_label_noise = (torch.rand(N, device=y_data.device))*label_noise - label_noise/2 + data_label
-    generated_label_noise = (torch.rand(N, device=y_data.device))*label_noise - label_noise/2 + generated_label
+    data_label_noise = (torch.rand(N, device=y_data.device)) * label_noise - label_noise / 2 + data_label
+    generated_label_noise = (torch.rand(N, device=y_data.device)) * label_noise - label_noise / 2 + generated_label
 
     criterion = nn.BCEWithLogitsLoss()
     loss_data = criterion(y_data, data_label_noise)
@@ -183,15 +176,6 @@ def discriminator_loss_fn(y_data, y_generated, data_label=0, label_noise=0.0):
 
 
 def generator_loss_fn(y_generated, data_label=0):
-    """
-    Computes the loss of the generator given generated data using a
-    binary cross-entropy metric.
-    This is the loss used to update the Generator parameters.
-    :param y_generated: Discriminator class-scores of instances of data
-    generated by the generator, shape (N,).
-    :param data_label: 0 or 1, label of instances coming from the real dataset.
-    :return: The generator loss.
-    """
     # TODO: Implement the Generator loss.
     # Think about what you need to compare the input to, in order to
     # formulate the loss in terms of Binary Cross Entropy.
@@ -200,7 +184,7 @@ def generator_loss_fn(y_generated, data_label=0):
 
     N = y_generated.shape[0]
 
-    label_tensor = torch.ones(N, device=y_generated.device)*data_label
+    label_tensor = torch.ones(N, device=y_generated.device) * data_label
     loss = criterion(y_generated, label_tensor)
 
     # ========================
@@ -208,9 +192,9 @@ def generator_loss_fn(y_generated, data_label=0):
 
 
 def train_batch(dsc_model: Discriminator, gen_model: Generator,
-                dsc_loss_fn: Callable, gen_loss_fn: Callable,
                 dsc_optimizer: Optimizer, gen_optimizer: Optimizer,
-                x_data: DataLoader):
+                x_data: DataLoader, dsc_iter_per_gen_iter: int = 5,
+                weight_cliping_limit: float = 0.01):
     """
     Trains a GAN for over one batch, updating both the discriminator and
     generator.
@@ -222,20 +206,26 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     # 2. Calculate discriminator loss
     # 3. Update discriminator parameters
     # ====== YOUR CODE: ======
-    dsc_optimizer.zero_grad()
+    d_loss = 0
+    for _ in range(dsc_iter_per_gen_iter):
+        dsc_optimizer.zero_grad()
 
-    generated_data = gen_model.sample(x_data.shape[0], with_grad=False)
+        for p in dsc_model.parameters():
+            p.data.clamp_(-weight_cliping_limit, weight_cliping_limit)
 
-    y_generated = dsc_model.forward(generated_data)
+        d_loss_real = dsc_model(x_data)
+        d_loss_real = d_loss_real.mean(0).view(1)
+        d_loss_real.backward(torch.FloatTensor([1]).to(device))
 
-    y_data = dsc_model.forward(x_data)
+        fake_images = gen_model.sample(x_data.shape[0], with_grad=False)
+        d_loss_fake = dsc_model(fake_images)
+        d_loss_fake = d_loss_fake.mean(0).view(1)
+        d_loss_fake.backward(torch.FloatTensor([-1]).to(device))
 
-    y_generated = y_generated.squeeze()
-    y_data = y_data.squeeze()
+        d_loss = d_loss_fake - d_loss_real
+        Wasserstein_D = d_loss_real - d_loss_fake
+        dsc_optimizer.step()
 
-    dsc_loss = dsc_loss_fn(y_data, y_generated)
-    dsc_loss.backward()
-    dsc_optimizer.step()
     # ========================
 
     # TODO: Generator update
@@ -245,14 +235,12 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     # ====== YOUR CODE: ======
     gen_model.zero_grad()
 
-    generated_data = gen_model.sample(x_data.shape[0], with_grad=True)
-    y_generated = dsc_model.forward(generated_data)
+    fake_images = gen_model.sample(x_data.shape[0], with_grad=True)
 
-    y_generated = y_generated.squeeze()
-
-    gen_loss = gen_loss_fn(y_generated)
-    gen_loss.backward()
+    g_loss = dsc_model(fake_images)
+    g_loss = g_loss.mean().mean(0).view(1)
+    g_loss.backward(torch.FloatTensor([1]).to(device))
     gen_optimizer.step()
     # ========================
 
-    return dsc_loss.item(), gen_loss.item()
+    return d_loss.item(), g_loss.item()
