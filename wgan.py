@@ -107,10 +107,10 @@ class Generator(nn.Module):
             nn.BatchNorm2d(num_generated_features),
             nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(num_generated_features, out_channels, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.Tanh()
-
+            nn.ConvTranspose2d(num_generated_features, out_channels, kernel_size=4, stride=2, padding=1, bias=False)
         )
+
+        self.output = nn.Tanh()
         # ========================
 
     def sample(self, n, with_grad=False):
@@ -149,6 +149,7 @@ class Generator(nn.Module):
         # ====== YOUR CODE: ======
         z = z.unsqueeze(2).unsqueeze(2)
         x = self.de_conv(z)
+        x = self.output(x)
         # ========================
         return x
 
