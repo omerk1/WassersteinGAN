@@ -79,22 +79,19 @@ class Generator(nn.Module):
         num_generated_features = 128
         self.de_conv = nn.Sequential(
 
-            nn.ConvTranspose2d(z_dim, num_generated_features * 8, kernel_size=featuremap_size, stride=1,
+            nn.ConvTranspose2d(z_dim, num_generated_features, kernel_size=featuremap_size, stride=1,
                                padding=0, bias=False),
-            nn.BatchNorm2d(num_generated_features * 8),
             nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(num_generated_features * 8, num_generated_features * 4, kernel_size=4, stride=2,
+            nn.ConvTranspose2d(num_generated_features, num_generated_features, kernel_size=4, stride=2,
                                padding=1, bias=False),
-            nn.BatchNorm2d(num_generated_features * 4),
             nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(num_generated_features * 4, num_generated_features * 2, kernel_size=4, stride=2,
+            nn.ConvTranspose2d(num_generated_features, num_generated_features, kernel_size=4, stride=2,
                                padding=1, bias=False),
-            nn.BatchNorm2d(num_generated_features * 2),
             nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(num_generated_features * 2, num_generated_features, kernel_size=4, stride=2,
+            nn.ConvTranspose2d(num_generated_features, num_generated_features, kernel_size=4, stride=2,
                                padding=1, bias=False),
             nn.BatchNorm2d(num_generated_features),
             nn.ReLU(inplace=True),
