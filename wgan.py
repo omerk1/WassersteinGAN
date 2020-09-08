@@ -217,7 +217,7 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     wasserstein_d = 0
 
     for p in gen_model.parameters():
-        p.requires_grad = True
+        p.requires_grad = False
 
     for _ in range(dsc_iter_per_gen_iter):
         dsc_optimizer.zero_grad()
@@ -228,11 +228,12 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
 
         d_loss_real = dsc_model(x_data)
         d_loss_real = d_loss_real.mean()
-        d_loss_real.backward(mone)
+        d_loss_real.backward(one)
 
         fake_images = gen_model.sample(x_data.shape[0], with_grad=False)
         d_loss_fake = dsc_model(fake_images)
-        d_loss_fake = d_loss_fake.mean(0).view(1)
+        # d_loss_fake = d_loss_fake.mean(0).view(1)
+        d_loss_fake = d_loss_fake.mean(0).mean()
         d_loss_fake.backward(mone)
 
         d_loss += d_loss_fake - d_loss_real
@@ -251,12 +252,16 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     for p in dsc_model.parameters():
         p.requires_grad = False
 
+    for p in gen_model.parameters():
+        p.requires_grad = True
+
     gen_model.zero_grad()
 
     fake_images = gen_model.sample(x_data.shape[0], with_grad=True)
 
     g_loss = dsc_model(fake_images)
-    g_loss = g_loss.mean().mean(0).view(1)
+    # g_loss = g_loss.mean().mean(0).view(1)
+    g_loss = g_loss.mean().mean(0).mean()
     g_loss.backward(one)
     g_cost = -g_loss
     gen_optimizer.step()
