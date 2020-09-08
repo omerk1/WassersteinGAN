@@ -85,16 +85,16 @@ class Generator(nn.Module):
 
             nn.ConvTranspose2d(num_generated_features * 8, num_generated_features * 4, kernel_size=4, stride=2, padding=1,
                                bias=False),
-            nn.BatchNorm2d(num_generated_features * 4),
+            # nn.BatchNorm2d(num_generated_features * 4),
             nn.ReLU(inplace=True),
 
             nn.ConvTranspose2d(num_generated_features * 4, num_generated_features * 2, kernel_size=4, stride=2, padding=1,
                                bias=False),
-            nn.BatchNorm2d(num_generated_features * 2),
+            # nn.BatchNorm2d(num_generated_features * 2),
             nn.ReLU(inplace=True),
 
             nn.ConvTranspose2d(num_generated_features * 2, num_generated_features, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(num_generated_features),
+            # nn.BatchNorm2d(num_generated_features),
             nn.ReLU(inplace=True),
 
             nn.ConvTranspose2d(num_generated_features, out_channels, kernel_size=4, stride=2, padding=1, bias=False),
