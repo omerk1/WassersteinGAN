@@ -38,7 +38,6 @@ def plot_history(d1_hist, d2_hist, g_hist):
     pyplot.close()
 
 
-# train the generator and critic
 def train(g_model, c_model, gan_model, dataset, latent_dim, n_epochs=10, n_batch=64, n_critic=5):
     # calculate the number of batches per training epoch
     bat_per_epo = int(dataset.shape[0] / n_batch)

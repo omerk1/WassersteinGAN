@@ -192,6 +192,26 @@ def generator_loss_fn(y_generated, data_label=0):
     return loss
 
 
+def calc_gradient_penalty(netD, real_data, fake_data, bs=64, lambda_val=10):
+    alpha = torch.rand(bs, 1)
+    alpha = alpha.expand(real_data.size())
+    alpha = alpha.to(device)
+
+    interpolates = alpha * real_data + ((1 - alpha) * fake_data)
+    interpolates = interpolates.to(device)
+
+    disc_interpolates = netD(interpolates)
+
+    gradients = torch.autograd.grad(
+        outputs=disc_interpolates, inputs=interpolates,
+        grad_outputs=torch.ones(disc_interpolates.size()).to(device),
+        create_graph=True, retain_graph=True, only_inputs=True
+    )[0]
+
+    gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * lambda_val
+    return gradient_penalty
+
+
 def train_batch(dsc_model: Discriminator, gen_model: Generator,
                 dsc_optimizer: Optimizer, gen_optimizer: Optimizer,
                 x_data: DataLoader, dsc_iter_per_gen_iter: int = 5,
@@ -228,13 +248,17 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
 
         d_loss_real = dsc_model(x_data)
         d_loss_real = d_loss_real.mean()
-        d_loss_real.backward(one)
+        d_loss_real.backward(mone)
 
         fake_images = gen_model.sample(x_data.shape[0], with_grad=False)
-        d_loss_fake = dsc_model(fake_images)
+        inputv = fake_images
+        d_loss_fake = dsc_model(inputv)
         # d_loss_fake = d_loss_fake.mean(0).view(1)
-        d_loss_fake = d_loss_fake.mean().mean()
-        d_loss_fake.backward(mone)
+        d_loss_fake = d_loss_fake.mean()
+        d_loss_fake.backward(one)
+
+        # gradient_penalty = calc_gradient_penalty(dsc_model, x_data.data, fake_images.data)
+        # gradient_penalty.backward()
 
         d_loss += d_loss_fake - d_loss_real
         wasserstein_d += d_loss_real - d_loss_fake
