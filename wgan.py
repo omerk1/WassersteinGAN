@@ -227,8 +227,8 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     # 2. Calculate discriminator loss
     # 3. Update discriminator parameters
     # ====== YOUR CODE: ======
-    # one = torch.tensor(1, dtype=torch.float)
-    one = torch.FloatTensor([1])
+    one = torch.tensor(1, dtype=torch.float)
+    # one = torch.FloatTensor([1])
     mone = one * -1
 
     one = one.to(device)

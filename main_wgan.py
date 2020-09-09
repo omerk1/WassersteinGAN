@@ -58,7 +58,7 @@ def main():
         with tqdm.tqdm(total=len(dl_train.batch_sampler), file=sys.stdout) as pbar:
             for batch_idx, (x_data, _) in enumerate(dl_train):
                 x_data = x_data.to(device)
-                dsc_loss, gen_loss, wasserstein_d = wgan.train_batch(
+                dsc_loss, wasserstein_d, gen_loss, gen_cost = wgan.train_batch(
                     dsc_model=dsc, gen_model=gen,
                     dsc_optimizer=dsc_optimizer, gen_optimizer=gen_optimizer,
                     x_data=x_data, dsc_iter_per_gen_iter=5, weight_cliping_limit=0.01
