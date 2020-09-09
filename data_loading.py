@@ -4,12 +4,6 @@ import torchvision.transforms as transforms
 
 
 def get_mnist_dataset(label=7):
-    # transform = torchvision.transforms.Compose([
-    #     torchvision.transforms.Scale(32),
-    #     torchvision.transforms.ToTensor(),
-    #     torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-    # ])
-
     transform = transforms.Compose(
         [
             torchvision.transforms.Scale(64),

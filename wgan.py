@@ -262,8 +262,8 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     g_loss = dsc_model(fake_images)
     # g_loss = g_loss.mean().mean(0).view(1)
     g_loss = g_loss.mean().mean().mean()
-    g_loss.backward(one)
     g_cost = -g_loss
+    g_cost.backward(one)
     gen_optimizer.step()
     # ========================
 
