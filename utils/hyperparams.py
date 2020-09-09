@@ -59,14 +59,26 @@ def wgan_hyperparams():
     hypers['z_dim'] = 100  # As illustrated in architecture in DCGAN paper
     hypers['data_label'] = 1  # Flip labels according to GAN Hacks https://github.com/soumith/ganhacks
     # hypers['label_noise'] = 0.2  # Seems about right
+    # hypers['discriminator_optimizer'] = dict(
+    #     type='RMSprop',
+    #     lr=0.00005
+    # )
+    #
+    # hypers['generator_optimizer'] = dict(
+    #     type='RMSprop',
+    #     lr=0.00005
+    # )
+
     hypers['discriminator_optimizer'] = dict(
-        type='RMSprop',
-        lr=0.00005
+        type='Adam',
+        lr=1e-4,
+        betas=(0.5, 0.9)
     )
 
     hypers['generator_optimizer'] = dict(
-        type='RMSprop',
-        lr=0.00005
+        type='Adam',
+        lr=1e-4,
+        betas=(0.5, 0.9)
     )
     # ========================
     return hypers

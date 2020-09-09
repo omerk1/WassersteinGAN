@@ -227,7 +227,8 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     # 2. Calculate discriminator loss
     # 3. Update discriminator parameters
     # ====== YOUR CODE: ======
-    one = torch.tensor(1, dtype=torch.float)
+    # one = torch.tensor(1, dtype=torch.float)
+    one = torch.FloatTensor([1])
     mone = one * -1
 
     one = one.to(device)
@@ -239,12 +240,14 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     for p in gen_model.parameters():
         p.requires_grad = False
 
+    for p in dsc_model.parameters():
+        p.requires_grad = True
+
     for _ in range(dsc_iter_per_gen_iter):
         dsc_optimizer.zero_grad()
 
         for p in dsc_model.parameters():
             p.data.clamp_(-weight_cliping_limit, weight_cliping_limit)
-            p.requires_grad = True
 
         d_loss_real = dsc_model(x_data)
         d_loss_real = d_loss_real.mean()
@@ -253,19 +256,24 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
         fake_images = gen_model.sample(x_data.shape[0], with_grad=False)
         inputv = fake_images
         d_loss_fake = dsc_model(inputv)
-        # d_loss_fake = d_loss_fake.mean(0).view(1)
         d_loss_fake = d_loss_fake.mean()
         d_loss_fake.backward(one)
+
+        gradient_penalty = 0
 
         # gradient_penalty = calc_gradient_penalty(dsc_model, x_data.data, fake_images.data)
         # gradient_penalty.backward()
 
-        d_loss += d_loss_fake - d_loss_real
-        wasserstein_d += d_loss_real - d_loss_fake
+        # d_loss += d_loss_fake - d_loss_real + gradient_penalty
+        # wasserstein_d += d_loss_real - d_loss_fake
+
+        d_loss = d_loss_fake - d_loss_real + gradient_penalty
+        wasserstein_d = d_loss_real - d_loss_fake
+
         dsc_optimizer.step()
 
-    d_loss = d_loss / dsc_iter_per_gen_iter
-    wasserstein_d = wasserstein_d / dsc_iter_per_gen_iter
+    # d_loss = d_loss / dsc_iter_per_gen_iter
+    # wasserstein_d = wasserstein_d / dsc_iter_per_gen_iter
     # ========================
 
     # TODO: Generator update
@@ -285,10 +293,10 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
 
     g_loss = dsc_model(fake_images)
     # g_loss = g_loss.mean().mean(0).view(1)
-    g_loss = g_loss.mean().mean().mean()
+    g_loss = g_loss.mean()  # .mean().mean()
+    g_loss.backward(mone)
     g_cost = -g_loss
-    g_cost.backward(one)
     gen_optimizer.step()
     # ========================
 
-    return d_loss.item(), g_cost.item(), wasserstein_d.item()
+    return d_loss.item(), wasserstein_d.item(), g_loss.item(), g_cost.item()
