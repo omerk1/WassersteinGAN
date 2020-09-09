@@ -1,7 +1,6 @@
 import numpy as np
 from matplotlib import pyplot
 
-import model
 import data_handling
 
 
@@ -11,9 +10,9 @@ def summarize_performance(step, g_model, latent_dim, n_samples=100):
     # scale from [-1,1] to [0,1]
     X = (X + 1) / 2.0
     # plot images
-    for i in range(10 * 10):
+    for i in range(3 * 3):
         # define subplot
-        pyplot.subplot(10, 10, 1 + i)
+        pyplot.subplot(3, 3, 1 + i)
         # turn off axis
         pyplot.axis('off')
         # plot raw pixel data

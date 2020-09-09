@@ -20,25 +20,25 @@ def load_real_samples():
 
 def generate_real_samples(dataset, n_samples):
     # choose random instances
-    ix = np.random.randint(0, dataset.shape[0], n_samples)
+    sampled_idx = np.random.randint(0, dataset.shape[0], n_samples)
     # select images
-    X = dataset[ix]
+    X = dataset[sampled_idx]
     # generate class labels, -1 for 'real'
     y = -np.ones((n_samples, 1))
     return X, y
 
 
-def generate_latent_points(latent_dim, n_samples):
+def generate_latent_points(z_dim, n_samples):
     # generate points in the latent space
-    x_input = np.random.randn(latent_dim * n_samples)
+    x_input = np.random.randn(z_dim * n_samples)
     # reshape into a batch of inputs for the network
-    x_input = x_input.reshape(n_samples, latent_dim)
+    x_input = x_input.reshape(n_samples, z_dim)
     return x_input
 
 
-def generate_fake_samples(generator, latent_dim, n_samples):
+def generate_fake_samples(generator, z_dim, n_samples):
     # generate points in latent space
-    x_input = generate_latent_points(latent_dim, n_samples)
+    x_input = generate_latent_points(z_dim, n_samples)
     # predict outputs
     X = generator.predict(x_input)
     # create class labels with 1.0 for 'fake'

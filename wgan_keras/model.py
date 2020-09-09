@@ -22,6 +22,7 @@ def define_critic(in_shape=(28, 28, 1)):
     # downsample to 14x14
     model.add(Conv2D(64, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init, kernel_constraint=const,
                      input_shape=in_shape))
+
     model.add(BatchNormalization())
     model.add(LeakyReLU(alpha=0.2))
     # downsample to 7x7
@@ -37,7 +38,7 @@ def define_critic(in_shape=(28, 28, 1)):
     return model
 
 
-def define_generator(latent_dim):
+def define_generator(latent_dim, add_batch_norm=True):
     # weight initialization
     init = RandomNormal(stddev=0.02)
     # define model
