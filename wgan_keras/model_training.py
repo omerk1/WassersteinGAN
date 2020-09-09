@@ -4,7 +4,7 @@ from matplotlib import pyplot
 import data_handling
 
 
-def summarize_performance(step, g_model, latent_dim, n_samples=100):
+def summarize_performance(step, g_model, latent_dim, n_samples=9):
     # prepare fake examples
     X, _ = data_handling.generate_fake_samples(g_model, latent_dim, n_samples)
     # scale from [-1,1] to [0,1]
