@@ -17,11 +17,6 @@ class Generator(nn.Module):
         super().__init__()
         self.z_dim = z_dim
 
-        # TODO: Create the generator model layers.
-        # To combine image features you can use the DecoderCNN from the VAE
-        # section or implement something new.
-        # You can assume a fixed image size.
-        # ====== YOUR CODE: ======
         self.img_shape = img_shape
         self.out_channels = img_shape[0]
         num_generated_features = 128
@@ -69,7 +64,6 @@ class Generator(nn.Module):
                 nn.Linear(512, int(np.prod(img_shape))),
                 nn.Tanh()
             )
-        # ========================
 
     def sample(self, n, with_grad=False):
         """
@@ -80,11 +74,7 @@ class Generator(nn.Module):
         computation graph or standalone tensors.
         :return: A batch of samples, shape (N,C,H,W).
         """
-        # device = next(self.parameters()).device
-        # TODO: Sample from the model.
-        # Generate n latent space samples and return their reconstructions.
-        # Don't use a loop.
-        # ====== YOUR CODE: ======
+
         z = torch.randn(n, self.z_dim, device=device, requires_grad=with_grad)
 
         if with_grad:
@@ -92,7 +82,6 @@ class Generator(nn.Module):
         else:
             with torch.no_grad():
                 samples = self.forward(z)
-        # ========================
         return samples
 
     def forward(self, z):
@@ -101,10 +90,7 @@ class Generator(nn.Module):
         :return: A batch of generated images of shape (N,C,H,W) which should be
         the shape which the Discriminator accepts.
         """
-        # TODO: Implement the Generator forward pass.
-        # Don't forget to make sure the output instances have the same scale
-        # as the original (real) images.
-        # ====== YOUR CODE: ======
+
         if self.generator_type == 'DCGAN':
             z = z.unsqueeze(2).unsqueeze(2)
         x = self.gen(z)
@@ -112,5 +98,4 @@ class Generator(nn.Module):
         if self.generator_type == 'MLP':
             x = x.reshape(-1, self.img_shape[0], self.img_shape[1], self.img_shape[2])
 
-        # ========================
         return x

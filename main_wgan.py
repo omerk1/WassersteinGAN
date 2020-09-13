@@ -7,10 +7,10 @@ import torch.optim as optim
 import tqdm
 from torch.utils.data import DataLoader
 
-import utils.plot as plot
-import wgan
 import discriminator
 import generator
+import utils.plot as plot
+import wgan
 from data_loading import get_mnist_dataset
 from utils.hyperparams import wgan_hyperparams
 

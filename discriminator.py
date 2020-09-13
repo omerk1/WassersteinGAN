@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 
 
@@ -9,12 +8,6 @@ class Discriminator(nn.Module):
         """
         super().__init__()
         self.in_size = in_size
-        # TODO: Create the discriminator model layers.
-        # To extract image features you can use the EncoderCNN from the VAE
-        # section or implement something new.
-        # You can then use either an affine layer or another conv layer to
-        # flatten the features.
-        # ====== YOUR CODE: ======
 
         self.num_discriminator_features = 64
         self.model_type = model_type
@@ -43,7 +36,6 @@ class Discriminator(nn.Module):
                                     padding=0, bias=False)
         elif self.model_type == 'WGAN':
             self.output = nn.Linear(8 * 16 * self.num_discriminator_features, 1)
-        # ========================
 
     def forward(self, x):
         """
@@ -51,10 +43,7 @@ class Discriminator(nn.Module):
         :return: Discriminator class score (aka logits, not probability) of
         shape (N,).
         """
-        # TODO: Implement discriminator forward pass.
-        # No need to apply sigmoid to obtain probability - we'll combine it
-        # with the loss due to improved numerical stability.
-        # ====== YOUR CODE: ======
+
         y = self.convs(x)
         if self.model_type == 'DCGAN':
             y = self.output(y)
@@ -63,5 +52,4 @@ class Discriminator(nn.Module):
         elif self.model_type == 'WGAN':
             y = self.output(y.view(-1, 8 * 16 * self.num_discriminator_features))
             y = y.squeeze(1)
-        # ========================
         return y

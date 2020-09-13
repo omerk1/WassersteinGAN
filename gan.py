@@ -55,10 +55,7 @@ def generator_loss_fn(y_generated, data_label=0):
     :param data_label: 0 or 1, label of instances coming from the real dataset.
     :return: The generator loss.
     """
-    # TODO: Implement the Generator loss.
-    # Think about what you need to compare the input to, in order to
-    # formulate the loss in terms of Binary Cross Entropy.
-    # ====== YOUR CODE: ======
+
     criterion = nn.BCEWithLogitsLoss()
 
     N = y_generated.shape[0]
@@ -66,7 +63,6 @@ def generator_loss_fn(y_generated, data_label=0):
     label_tensor = torch.ones(N, device=y_generated.device) * data_label
     loss = criterion(y_generated, label_tensor)
 
-    # ========================
     return loss
 
 
@@ -80,11 +76,6 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     :return: The discriminator and generator losses.
     """
 
-    # TODO: Discriminator update
-    # 1. Show the discriminator real and generated data
-    # 2. Calculate discriminator loss
-    # 3. Update discriminator parameters
-    # ====== YOUR CODE: ======
     dsc_optimizer.zero_grad()
 
     generated_data = gen_model.sample(x_data.shape[0], with_grad=False)
@@ -99,13 +90,7 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     dsc_loss = dsc_loss_fn(y_data, y_generated)
     dsc_loss.backward()
     dsc_optimizer.step()
-    # ========================
 
-    # TODO: Generator update
-    # 1. Show the discriminator generated data
-    # 2. Calculate generator loss
-    # 3. Update generator parameters
-    # ====== YOUR CODE: ======
     gen_model.zero_grad()
 
     generated_data = gen_model.sample(x_data.shape[0], with_grad=True)
@@ -116,6 +101,5 @@ def train_batch(dsc_model: Discriminator, gen_model: Generator,
     gen_loss = gen_loss_fn(y_generated)
     gen_loss.backward()
     gen_optimizer.step()
-    # ========================
 
     return dsc_loss.item(), gen_loss.item()
