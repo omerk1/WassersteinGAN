@@ -2,148 +2,11 @@ from typing import Callable
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
-
-class Discriminator(nn.Module):
-    def __init__(self, in_size):
-        """
-        :param in_size: The size of on input image (without batch dimension).
-        """
-        super().__init__()
-        self.in_size = in_size
-        # TODO: Create the discriminator model layers.
-        # To extract image features you can use the EncoderCNN from the VAE
-        # section or implement something new.
-        # You can then use either an affine layer or another conv layer to
-        # flatten the features.
-        # ====== YOUR CODE: ======
-
-        num_discriminator_features = 64
-        in_channels = in_size[0]
-        self.convs = nn.Sequential(
-            nn.Conv2d(in_channels, num_discriminator_features, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            nn.Conv2d(num_discriminator_features, num_discriminator_features * 2, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(num_discriminator_features * 2),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            nn.Conv2d(num_discriminator_features * 2, num_discriminator_features * 4, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(num_discriminator_features * 4),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            nn.Conv2d(num_discriminator_features * 4, num_discriminator_features * 8, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(num_discriminator_features * 8),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            nn.Conv2d(num_discriminator_features * 8, 1, kernel_size=4, stride=1, padding=0, bias=False),
-        )
-        # ========================
-
-    def forward(self, x):
-        """
-        :param x: Input of shape (N,C,H,W) matching the given in_size.
-        :return: Discriminator class score (aka logits, not probability) of
-        shape (N,).
-        """
-        # TODO: Implement discriminator forward pass.
-        # No need to apply sigmoid to obtain probability - we'll combine it
-        # with the loss due to improved numerical stability.
-        # ====== YOUR CODE: ======
-        y = self.convs(x)
-        y = y.squeeze(1).squeeze(1).squeeze(1)
-        # ========================
-        return y
-
-
-class Generator(nn.Module):
-    def __init__(self, z_dim, featuremap_size=4, out_channels=3):
-        """
-        :param z_dim: Dimension of latent space.
-        :featuremap_size: Spatial size of first feature map to create
-        (determines output size). For example set to 4 for a 4x4 feature map.
-        :out_channels: Number of channels in the generated image.
-        """
-        super().__init__()
-        self.z_dim = z_dim
-
-        # TODO: Create the generator model layers.
-        # To combine image features you can use the DecoderCNN from the VAE
-        # section or implement something new.
-        # You can assume a fixed image size.
-        # ====== YOUR CODE: ======
-
-        num_generated_features = 128
-        self.de_conv = nn.Sequential(
-
-            nn.ConvTranspose2d(z_dim, num_generated_features * 8, kernel_size=featuremap_size, stride=1,
-                               padding=0, bias=False),
-            nn.BatchNorm2d(num_generated_features * 8),
-            nn.ReLU(inplace=True),
-
-            nn.ConvTranspose2d(num_generated_features * 8, num_generated_features * 4, kernel_size=4, stride=2,
-                               padding=1, bias=False),
-            nn.BatchNorm2d(num_generated_features * 4),
-            nn.ReLU(inplace=True),
-
-            nn.ConvTranspose2d(num_generated_features * 4, num_generated_features * 2, kernel_size=4, stride=2,
-                               padding=1, bias=False),
-            nn.BatchNorm2d(num_generated_features * 2),
-            nn.ReLU(inplace=True),
-
-            nn.ConvTranspose2d(num_generated_features * 2, num_generated_features, kernel_size=4, stride=2,
-                               padding=1, bias=False),
-            nn.BatchNorm2d(num_generated_features),
-            nn.ReLU(inplace=True),
-
-            nn.ConvTranspose2d(num_generated_features, out_channels, kernel_size=4, stride=2,
-                               padding=1, bias=False),
-            nn.Tanh()
-
-        )
-        # ========================
-
-    def sample(self, n, with_grad=False):
-        """
-        Samples from the Generator.
-        :param n: Number of instance-space samples to generate.
-        :param with_grad: Whether the returned samples should track
-        gradients or not. I.e., whether they should be part of the generator's
-        computation graph or standalone tensors.
-        :return: A batch of samples, shape (N,C,H,W).
-        """
-        device = next(self.parameters()).device
-        # TODO: Sample from the model.
-        # Generate n latent space samples and return their reconstructions.
-        # Don't use a loop.
-        # ====== YOUR CODE: ======
-        z = torch.randn(n, self.z_dim, device=device, requires_grad=with_grad)
-
-        if with_grad:
-            samples = self.forward(z)
-        else:
-            with torch.no_grad():
-                samples = self.forward(z)
-        # ========================
-        return samples
-
-    def forward(self, z):
-        """
-        :param z: A batch of latent space samples of shape (N, latent_dim).
-        :return: A batch of generated images of shape (N,C,H,W) which should be
-        the shape which the Discriminator accepts.
-        """
-        # TODO: Implement the Generator forward pass.
-        # Don't forget to make sure the output instances have the same scale
-        # as the original (real) images.
-        # ====== YOUR CODE: ======
-        z = z.unsqueeze(2).unsqueeze(2)
-        x = self.de_conv(z)
-        # ========================
-        return x
+from discriminator import Discriminator
+from generator import Generator
 
 
 def discriminator_loss_fn(y_data, y_generated, data_label=0, label_noise=0.0):
@@ -171,8 +34,8 @@ def discriminator_loss_fn(y_data, y_generated, data_label=0, label_noise=0.0):
 
     assert N == y_generated.shape[0]
 
-    data_label_noise = (torch.rand(N, device=y_data.device))*label_noise - label_noise/2 + data_label
-    generated_label_noise = (torch.rand(N, device=y_data.device))*label_noise - label_noise/2 + generated_label
+    data_label_noise = (torch.rand(N, device=y_data.device)) * label_noise - label_noise / 2 + data_label
+    generated_label_noise = (torch.rand(N, device=y_data.device)) * label_noise - label_noise / 2 + generated_label
 
     criterion = nn.BCEWithLogitsLoss()
     loss_data = criterion(y_data, data_label_noise)
@@ -200,7 +63,7 @@ def generator_loss_fn(y_generated, data_label=0):
 
     N = y_generated.shape[0]
 
-    label_tensor = torch.ones(N, device=y_generated.device)*data_label
+    label_tensor = torch.ones(N, device=y_generated.device) * data_label
     loss = criterion(y_generated, label_tensor)
 
     # ========================
