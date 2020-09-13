@@ -7,7 +7,9 @@ import torch.optim as optim
 import tqdm
 from torch.utils.data import DataLoader
 
+import discriminator
 import gan
+import generator
 import utils.plot as plot
 from data_loading import get_mnist_dataset
 from utils.hyperparams import gan_hyperparams
@@ -28,8 +30,8 @@ def main():
     im_size = data_set[0][0].shape
 
     # Model
-    dsc = gan.Discriminator(im_size).to(device)
-    gen = gan.Generator(z_dim, featuremap_size=4, out_channels=im_size[0]).to(device)
+    dsc = discriminator.Discriminator(im_size, model_type='DCGAN').to(device)
+    gen = generator.Generator(z_dim, img_shape=im_size, featuremap_size=4, generator_type='MLP').to(device)
 
     # Optimizer
     def create_optimizer(model_params, opt_params):

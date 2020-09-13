@@ -9,6 +9,8 @@ from torch.utils.data import DataLoader
 
 import utils.plot as plot
 import wgan
+import discriminator
+import generator
 from data_loading import get_mnist_dataset
 from utils.hyperparams import wgan_hyperparams
 
@@ -28,13 +30,8 @@ def main():
     im_size = data_set[0][0].shape
 
     # Model
-    dsc = wgan.Discriminator(im_size).to(device)
-    gen = wgan.Generator(
-        z_dim=z_dim,
-        img_shape=im_size,
-        featuremap_size=4,
-        generator_type='MLP'
-    ).to(device)
+    dsc = discriminator.Discriminator(im_size, model_type='WGAN').to(device)
+    gen = generator.Generator(z_dim, img_shape=im_size, featuremap_size=4, generator_type='MLP').to(device)
 
     # Optimizer
     def create_optimizer(model_params, opt_params):

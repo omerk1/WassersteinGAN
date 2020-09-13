@@ -17,6 +17,7 @@ class Discriminator(nn.Module):
         # ====== YOUR CODE: ======
 
         self.num_discriminator_features = 64
+        self.model_type = model_type
         in_channels = in_size[0]
         self.convs = nn.Sequential(
             nn.Conv2d(in_channels, self.num_discriminator_features, kernel_size=4, stride=2, padding=1, bias=False),
@@ -37,10 +38,10 @@ class Discriminator(nn.Module):
             nn.BatchNorm2d(self.num_discriminator_features * 8),
             nn.LeakyReLU(0.2, inplace=True),
         )
-        if model_type == 'DCGAN':
+        if self.model_type == 'DCGAN':
             self.output = nn.Conv2d(self.num_discriminator_features * 8, 1, kernel_size=4, stride=1,
                                     padding=0, bias=False)
-        elif model_type == 'WGAN':
+        elif self.model_type == 'WGAN':
             self.output = nn.Linear(8 * 16 * self.num_discriminator_features, 1)
         # ========================
 
@@ -55,7 +56,12 @@ class Discriminator(nn.Module):
         # with the loss due to improved numerical stability.
         # ====== YOUR CODE: ======
         y = self.convs(x)
-        y = self.output(y)
-        y = y.squeeze(1).squeeze(1).squeeze(1)
+        if self.model_type == 'DCGAN':
+            y = self.output(y)
+            y = y.squeeze(1).squeeze(1).squeeze(1)
+
+        elif self.model_type == 'WGAN':
+            y = self.output(y.view(-1, 8 * 16 * self.num_discriminator_features))
+            y = y.squeeze(1)
         # ========================
         return y

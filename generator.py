@@ -2,6 +2,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+use_cuda = torch.cuda.is_available()
+device = torch.device("cuda:0" if use_cuda else "cpu")
+
 
 class Generator(nn.Module):
     def __init__(self, z_dim, img_shape, featuremap_size=4, generator_type='DCGAN'):
