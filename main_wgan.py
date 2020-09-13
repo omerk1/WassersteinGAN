@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 import utils.plot as plot
 import wgan
 from data_loading import get_mnist_dataset
-from utils.hyperparams import gan_hyperparams
+from utils.hyperparams import wgan_hyperparams
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if use_cuda else "cpu")
@@ -18,7 +18,7 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 
 def main():
     # Hyperparams
-    hp = gan_hyperparams()
+    hp = wgan_hyperparams()
     batch_size = hp['batch_size']
     z_dim = hp['z_dim']
 
@@ -29,14 +29,18 @@ def main():
 
     # Model
     dsc = wgan.Discriminator(im_size).to(device)
-    gen = wgan.Generator(z_dim, featuremap_size=4, out_channels=im_size[0]).to(device)
+    gen = wgan.Generator(
+        z_dim=z_dim,
+        img_shape=im_size,
+        featuremap_size=4,
+        generator_type='MLP'
+    ).to(device)
 
     # Optimizer
     def create_optimizer(model_params, opt_params):
-        opt_params = opt_params.copy()
-        optimizer_type = opt_params['type']
-        opt_params.pop('type')
-        return optim.__dict__[optimizer_type](model_params, **opt_params)
+        opt_params_tmp = opt_params.copy()
+        optimizer_type = opt_params_tmp.pop('type')
+        return optim.__dict__[optimizer_type](model_params, **opt_params_tmp)
 
     dsc_optimizer = create_optimizer(dsc.parameters(), hp['discriminator_optimizer'])
     gen_optimizer = create_optimizer(gen.parameters(), hp['generator_optimizer'])
