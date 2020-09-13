@@ -14,29 +14,29 @@ class Discriminator(nn.Module):
         # flatten the features.
         # ====== YOUR CODE: ======
 
-        num_discriminator_features = 64
+        self.num_discriminator_features = 64
         in_channels = in_size[0]
         self.convs = nn.Sequential(
-            nn.Conv2d(in_channels, num_discriminator_features, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.Conv2d(in_channels, self.num_discriminator_features, kernel_size=4, stride=2, padding=1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(num_discriminator_features, num_discriminator_features * 2, kernel_size=4, stride=2, padding=1,
+            nn.Conv2d(self.num_discriminator_features, self.num_discriminator_features * 2, kernel_size=4, stride=2, padding=1,
                       bias=False),
-            nn.BatchNorm2d(num_discriminator_features * 2),
+            nn.BatchNorm2d(self.num_discriminator_features * 2),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(num_discriminator_features * 2, num_discriminator_features * 4, kernel_size=4, stride=2,
+            nn.Conv2d(self.num_discriminator_features * 2, self.num_discriminator_features * 4, kernel_size=4, stride=2,
                       padding=1, bias=False),
-            nn.BatchNorm2d(num_discriminator_features * 4),
+            nn.BatchNorm2d(self.num_discriminator_features * 4),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(num_discriminator_features * 4, num_discriminator_features * 8, kernel_size=4, stride=2,
+            nn.Conv2d(self.num_discriminator_features * 4, self.num_discriminator_features * 8, kernel_size=4, stride=2,
                       padding=1, bias=False),
-            nn.BatchNorm2d(num_discriminator_features * 8),
+            nn.BatchNorm2d(self.num_discriminator_features * 8),
             nn.LeakyReLU(0.2, inplace=True),
         )
         if model_type == 'DCGAN':
-            self.output = nn.Conv2d(num_discriminator_features * 8, 1, kernel_size=4, stride=1, padding=0, bias=False)
+            self.output = nn.Conv2d(self.num_discriminator_features * 8, 1, kernel_size=4, stride=1, padding=0, bias=False)
         elif model_type == 'WGAN':
             self.output = nn.Linear(8 * 16 * self.num_discriminator_features, 1)
         # ========================
