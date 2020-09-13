@@ -7,3 +7,5 @@ The main relevant python files are:
 2. discriminator.py- defining the discriminator architecture. model_type='DCGAN' defines a regular gan discriminator, and model_type='WGAN' defines a WGAN critic.
 3. gan.py- defines the whole training procedure of regular GAN.
 4. wgan.py- defines the whole training procedure of WGAN.
+5. data_loading.py- loads MNIST dataset and filter it.
+6. utils- hyperparameters definitions. plot and data utils.
