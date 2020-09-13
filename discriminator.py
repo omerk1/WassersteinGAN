@@ -1,4 +1,6 @@
+import torch
 import torch.nn as nn
+
 
 class Discriminator(nn.Module):
     def __init__(self, in_size, model_type):
@@ -20,8 +22,8 @@ class Discriminator(nn.Module):
             nn.Conv2d(in_channels, self.num_discriminator_features, kernel_size=4, stride=2, padding=1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(self.num_discriminator_features, self.num_discriminator_features * 2, kernel_size=4, stride=2, padding=1,
-                      bias=False),
+            nn.Conv2d(self.num_discriminator_features, self.num_discriminator_features * 2, kernel_size=4, stride=2,
+                      padding=1, bias=False),
             nn.BatchNorm2d(self.num_discriminator_features * 2),
             nn.LeakyReLU(0.2, inplace=True),
 
@@ -36,7 +38,8 @@ class Discriminator(nn.Module):
             nn.LeakyReLU(0.2, inplace=True),
         )
         if model_type == 'DCGAN':
-            self.output = nn.Conv2d(self.num_discriminator_features * 8, 1, kernel_size=4, stride=1, padding=0, bias=False)
+            self.output = nn.Conv2d(self.num_discriminator_features * 8, 1, kernel_size=4, stride=1,
+                                    padding=0, bias=False)
         elif model_type == 'WGAN':
             self.output = nn.Linear(8 * 16 * self.num_discriminator_features, 1)
         # ========================
