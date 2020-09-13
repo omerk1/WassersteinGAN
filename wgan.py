@@ -154,44 +154,6 @@ class Generator(nn.Module):
         return x
 
 
-def critic_loss_fn(y_data, y_generated, data_label=0, label_noise=0.0):
-    assert data_label == 1 or data_label == -1
-    # TODO: Implement the discriminator loss.
-    # See torch's BCEWithLogitsLoss for a numerically stable implementation.
-    # ====== YOUR CODE: ======
-
-    generated_label = -data_label
-    N = y_data.shape[0]
-
-    assert N == y_generated.shape[0]
-
-    data_label_noise = (torch.rand(N, device=y_data.device)) * label_noise - label_noise / 2 + data_label
-    generated_label_noise = (torch.rand(N, device=y_data.device)) * label_noise - label_noise / 2 + generated_label
-
-    criterion = nn.BCEWithLogitsLoss()
-    loss_data = criterion(y_data, data_label_noise)
-    loss_generated = criterion(y_generated, generated_label_noise)
-
-    # ========================
-    return loss_data + loss_generated
-
-
-def generator_loss_fn(y_generated, data_label=0):
-    # TODO: Implement the Generator loss.
-    # Think about what you need to compare the input to, in order to
-    # formulate the loss in terms of Binary Cross Entropy.
-    # ====== YOUR CODE: ======
-    criterion = nn.BCEWithLogitsLoss()
-
-    N = y_generated.shape[0]
-
-    label_tensor = torch.ones(N, device=y_generated.device) * data_label
-    loss = criterion(y_generated, label_tensor)
-
-    # ========================
-    return loss
-
-
 def calc_gradient_penalty(netD, real_data, fake_data, bs=64, lambda_val=10):
     alpha = torch.rand(bs, 1)
     alpha = alpha.expand(real_data.size())
