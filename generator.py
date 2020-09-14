@@ -53,8 +53,8 @@ class Generator(nn.Module):
                 layers = [nn.Linear(in_feat, out_feat)]
                 if normalize:
                     layers.append(nn.BatchNorm1d(out_feat, 0.8))
-                # layers.append(nn.LeakyReLU(0.2, inplace=True))
-                layers.append(nn.ReLU())
+                layers.append(nn.LeakyReLU(0.2, inplace=True))
+                # layers.append(nn.ReLU())
                 return layers
             bn = False
             self.gen = nn.Sequential(
