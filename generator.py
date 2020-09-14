@@ -56,7 +56,7 @@ class Generator(nn.Module):
                 layers.append(nn.LeakyReLU(0.2, inplace=True))
                 # layers.append(nn.ReLU())
                 return layers
-            bn = False
+            bn = True
             self.gen = nn.Sequential(
                 *block(z_dim, 512, normalize=bn),
                 *block(512, 512, normalize=bn),
