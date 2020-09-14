@@ -61,7 +61,7 @@ class Generator(nn.Module):
                 *block(z_dim, 512, normalize=bn),
                 *block(512, 512, normalize=bn),
                 *block(512, 512, normalize=bn),
-                # *block(512, 512),
+                *block(512, 512),
                 nn.Linear(512, int(np.prod(img_shape))),
                 nn.Tanh()
             )
