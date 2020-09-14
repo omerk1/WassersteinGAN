@@ -59,8 +59,8 @@ class Generator(nn.Module):
 
             self.gen = nn.Sequential(
                 *block(z_dim, 512, normalize=False),
-                *block(512, 512),
-                *block(512, 512),
+                *block(512, 512, normalize=False),
+                *block(512, 512, normalize=False),
                 # *block(512, 512),
                 nn.Linear(512, int(np.prod(img_shape))),
                 nn.Tanh()
