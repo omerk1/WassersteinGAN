@@ -53,14 +53,15 @@ class Generator(nn.Module):
                 layers = [nn.Linear(in_feat, out_feat)]
                 if normalize:
                     layers.append(nn.BatchNorm1d(out_feat, 0.8))
-                layers.append(nn.LeakyReLU(0.2, inplace=True))
+                # layers.append(nn.LeakyReLU(0.2, inplace=True))
+                layers.append(nn.ReLU())
                 return layers
 
             self.gen = nn.Sequential(
                 *block(z_dim, 512, normalize=False),
                 *block(512, 512),
                 *block(512, 512),
-                *block(512, 512),
+                # *block(512, 512),
                 nn.Linear(512, int(np.prod(img_shape))),
                 nn.Tanh()
             )
